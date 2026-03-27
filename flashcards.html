@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countries & Nationalities</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --card-front: #1e293b;
+    --card-back: #0ea5e9;
+    --accent: #f59e0b;
+    --text-light: #f1f5f9;
+    --text-muted: #94a3b8;
+    --correct: #22c55e;
+    --wrong: #ef4444;
+    --radius: 22px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: var(--bg);
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 60px;
+    /* subtle star-field texture */
+    background-image: radial-gradient(circle, #ffffff08 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .globe { font-size: 3rem; margin-bottom: 6px; animation: spin 8s linear infinite; display: inline-block; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4rem;
+    color: var(--accent);
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 24px;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #f97316);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+    width: 5%;
+  }
+
+  /* ── Card Stage ── */
+  .stage {
+    perspective: 1200px;
+    width: 100%;
+    max-width: 400px;
+    height: 260px;
+    margin-bottom: 28px;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .stage.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    gap: 10px;
+  }
+
+  /* Front — dark navy */
+  .card-front {
+    background: var(--card-front);
+    border: 2px solid #334155;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .card-flag {
+    width: 140px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    transition: transform 0.2s;
+    object-fit: cover;
+  }
+
+  .stage:hover .card-flag { transform: scale(1.06); }
+
+  .card-country {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.9rem;
+    color: var(--text-light);
+    letter-spacing: 0.5px;
+  }
+
+  .tap-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .tap-hint::before { content: '👆'; font-size: 0.9rem; }
+
+  /* Back — sky blue */
+  .card-back {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    box-shadow: 0 8px 40px rgba(14,165,233,0.3);
+    transform: rotateY(180deg);
+    gap: 8px;
+  }
+
+  .back-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .back-nationality {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.4rem;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .back-sentence {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    text-align: center;
+    line-height: 1.4;
+    background: rgba(255,255,255,0.15);
+    padding: 8px 16px;
+    border-radius: 12px;
+    margin-top: 4px;
+  }
+
+  /* ── Buttons ── */
+  .controls {
+    display: flex;
+    gap: 12px;
+    max-width: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .ctrl-btn {
+    flex: 1;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 10px;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    letter-spacing: 0.5px;
+  }
+
+  .ctrl-btn:hover { transform: translateY(-2px); }
+  .ctrl-btn:active { transform: scale(0.97); }
+
+  .btn-prev {
+    background: #1e293b;
+    color: var(--text-muted);
+    border: 2px solid #334155;
+  }
+
+  .btn-flip {
+    background: var(--accent);
+    color: #1e293b;
+    flex: 2;
+  }
+
+  .btn-next {
+    background: #1e293b;
+    color: var(--text-muted);
+    border: 2px solid #334155;
+  }
+
+  /* ── Dot navigation ── */
+  .dots {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 400px;
+    margin-bottom: 28px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #334155;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .dot.active { background: var(--accent); transform: scale(1.3); }
+  .dot.seen   { background: #0ea5e9; }
+
+  /* ── Shuffle / Reset ── */
+  .meta-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .meta-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.9rem;
+    padding: 9px 20px;
+    border-radius: 12px;
+    border: 2px solid #334155;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.4px;
+  }
+
+  .meta-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Card count badge ── */
+  .card-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="globe">🌍</div>
+  <h1>Countries &amp; Nationalities</h1>
+  <p class="subtitle">Tap a card to reveal the nationality</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="prog-text">Card 1 of 20</span>
+    <span id="prog-seen">0 seen</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<div class="card-num" id="card-num">1 / 20</div>
+
+<div class="stage" id="stage" onclick="flipCard()">
+  <div class="card-inner" id="card-inner">
+    <div class="card-face card-front">
+      <img class="card-flag" id="card-flag" src="https://flagcdn.com/w160/au.png" alt="Flag" />
+      <div class="card-country" id="card-country">Australia</div>
+      <div class="tap-hint">Tap to reveal</div>
+    </div>
+    <div class="card-face card-back">
+      <div class="back-label">Nationality</div>
+      <div class="back-nationality" id="card-nationality">Australian</div>
+      <div class="back-sentence" id="card-sentence">"She is Australian."</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn btn-prev" onclick="prevCard()">← Prev</button>
+  <button class="ctrl-btn btn-flip" onclick="flipCard()">Flip Card 🔄</button>
+  <button class="ctrl-btn btn-next" onclick="nextCard()">Next →</button>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="meta-controls">
+  <button class="meta-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+  <button class="meta-btn" onclick="resetCards()">↺ Reset</button>
+</div>
+
+<script>
+const allCards = [
+  { flag: 'au', country: 'Australia',       nationality: 'Australian',    sentence: 'She is Australian.' },
+  { flag: 'us', country: 'The USA',         nationality: 'American',      sentence: 'He is American.' },
+  { flag: 'gb', country: 'The UK',          nationality: 'British',       sentence: 'She is British.' },
+  { flag: 'ca', country: 'Canada',          nationality: 'Canadian',      sentence: 'He is Canadian.' },
+  { flag: 'fr', country: 'France',          nationality: 'French',        sentence: 'She is French.' },
+  { flag: 'de', country: 'Germany',         nationality: 'German',        sentence: 'He is German.' },
+  { flag: 'jp', country: 'Japan',           nationality: 'Japanese',      sentence: 'She is Japanese.' },
+  { flag: 'cn', country: 'China',           nationality: 'Chinese',       sentence: 'He is Chinese.' },
+  { flag: 'br', country: 'Brazil',          nationality: 'Brazilian',     sentence: 'She is Brazilian.' },
+  { flag: 'mx', country: 'Mexico',          nationality: 'Mexican',       sentence: 'He is Mexican.' },
+  { flag: 'es', country: 'Spain',           nationality: 'Spanish',       sentence: 'She is Spanish.' },
+  { flag: 'it', country: 'Italy',           nationality: 'Italian',       sentence: 'He is Italian.' },
+  { flag: 'kr', country: 'South Korea',     nationality: 'Korean',        sentence: 'She is Korean.' },
+  { flag: 'in', country: 'India',           nationality: 'Indian',        sentence: 'He is Indian.' },
+  { flag: 'ru', country: 'Russia',          nationality: 'Russian',       sentence: 'She is Russian.' },
+  { flag: 'sa', country: 'Saudi Arabia',    nationality: 'Saudi',         sentence: 'He is Saudi.' },
+  { flag: 'tr', country: 'Turkey',          nationality: 'Turkish',       sentence: 'She is Turkish.' },
+  { flag: 'nz', country: 'New Zealand',     nationality: 'New Zealander', sentence: 'He is a New Zealander.' },
+  { flag: 'pt', country: 'Portugal',        nationality: 'Portuguese',    sentence: 'She is Portuguese.' },
+  { flag: 'th', country: 'Thailand',        nationality: 'Thai',          sentence: 'He is Thai.' },
+];
+
+let cards = [...allCards];
+let current = 0;
+let seen = new Set();
+let isFlipped = false;
+
+function buildDots() {
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  cards.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '') + (seen.has(i) ? ' seen' : '');
+    d.onclick = () => goTo(i);
+    dots.appendChild(d);
+  });
+}
+
+function updateCard() {
+  const c = cards[current];
+  const flagEl = document.getElementById('card-flag');
+  flagEl.src = 'https://flagcdn.com/w160/' + c.flag + '.png';
+  flagEl.alt = c.country + ' flag';
+  document.getElementById('card-country').textContent = c.country;
+  document.getElementById('card-nationality').textContent = c.nationality;
+  document.getElementById('card-sentence').textContent = '"' + c.sentence + '"';
+  document.getElementById('card-num').textContent = (current + 1) + ' / ' + cards.length;
+  document.getElementById('prog-text').textContent = 'Card ' + (current + 1) + ' of ' + cards.length;
+  document.getElementById('prog-seen').textContent = seen.size + ' seen';
+  document.getElementById('prog-fill').style.width = Math.max(5, Math.round(seen.size / cards.length * 100)) + '%';
+
+  // unflip
+  isFlipped = false;
+  document.getElementById('stage').classList.remove('flipped');
+
+  buildDots();
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('stage').classList.toggle('flipped', isFlipped);
+  if (isFlipped) {
+    seen.add(current);
+    updateProgressOnly();
+    buildDots();
+  }
+}
+
+function updateProgressOnly() {
+  document.getElementById('prog-seen').textContent = seen.size + ' seen';
+  document.getElementById('prog-fill').style.width = Math.max(5, Math.round(seen.size / cards.length * 100)) + '%';
+}
+
+function nextCard() {
+  if (current < cards.length - 1) {
+    current++;
+    updateCard();
+  }
+}
+
+function prevCard() {
+  if (current > 0) {
+    current--;
+    updateCard();
+  }
+}
+
+function goTo(i) {
+  current = i;
+  updateCard();
+}
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  current = 0;
+  seen = new Set();
+  updateCard();
+}
+
+function resetCards() {
+  cards = [...allCards];
+  current = 0;
+  seen = new Set();
+  updateCard();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+});
+
+updateCard();
+</script>
+</body>
+</html>
