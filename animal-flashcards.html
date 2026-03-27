@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Nunito:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ee;
+    --card-w: 380px;
+    --card-h: 420px;
+    --green:  #4ade80;
+    --amber:  #fbbf24;
+    --sky:    #38bdf8;
+    --pink:   #f472b6;
+    --radius: 24px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 64px;
+    /* soft grass-pattern background */
+    background-image:
+      radial-gradient(ellipse at 20% 0%, #d1fae566 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, #fde68a44 0%, transparent 50%);
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .paw { font-size: 2.6rem; display: inline-block; animation: waggle 1.8s ease-in-out infinite; }
+  @keyframes waggle {
+    0%,100% { transform: rotate(-10deg); }
+    50%      { transform: rotate(10deg); }
+  }
+
+  h1 {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 2.4rem;
+    color: #1e293b;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  .subtitle {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    width: 100%;
+    max-width: var(--card-w);
+    margin-bottom: 20px;
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 7px;
+  }
+
+  .progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ade80, #38bdf8);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+    width: 9%;
+  }
+
+  /* ── Flip Stage ── */
+  .stage {
+    perspective: 1400px;
+    width: 100%;
+    max-width: var(--card-w);
+    height: var(--card-h);
+    margin-bottom: 24px;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .stage.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+    overflow: hidden;
+  }
+
+  /* ── FRONT ── */
+  .card-front {
+    background: #ffffff;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .front-top-bar {
+    background: linear-gradient(135deg, #4ade80, #38bdf8);
+    padding: 14px 20px 12px;
+    text-align: center;
+  }
+
+  .question-text {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 1.35rem;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+
+  .animal-img-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: #f8fafc;
+  }
+
+  .animal-img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 14px;
+    transition: transform 0.2s;
+  }
+
+  .stage:hover .animal-img { transform: scale(1.03); }
+
+  .front-bottom {
+    padding: 12px 20px 16px;
+    text-align: center;
+    background: #fff;
+  }
+
+  .tap-hint {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  /* ── BACK ── */
+  .card-back {
+    background: linear-gradient(160deg, #f0fdf4 0%, #ecfeff 100%);
+    box-shadow: 0 8px 32px rgba(74,222,128,0.18), 0 2px 8px rgba(0,0,0,0.06);
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px 24px;
+    border: 3px solid #bbf7d0;
+  }
+
+  .back-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #86efac;
+  }
+
+  .animal-name {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 3.2rem;
+    color: #166534;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .answer-divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #4ade80, #38bdf8);
+    border-radius: 3px;
+  }
+
+  .answer-sentence {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f766e;
+    text-align: center;
+    background: #ffffff;
+    border: 2px solid #bbf7d0;
+    border-radius: 14px;
+    padding: 12px 20px;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(74,222,128,0.12);
+  }
+
+  .answer-sentence em {
+    font-style: normal;
+    color: #16a34a;
+    font-weight: 900;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    max-width: var(--card-w);
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  .ctrl-btn {
+    flex: 1;
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 1rem;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 8px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .ctrl-btn:hover  { transform: translateY(-2px); }
+  .ctrl-btn:active { transform: scale(0.97); }
+
+  .btn-prev {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 2px solid #e2e8f0;
+  }
+
+  .btn-flip {
+    flex: 2;
+    background: linear-gradient(135deg, #4ade80, #38bdf8);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(74,222,128,0.35);
+    font-size: 1.05rem;
+  }
+
+  .btn-next {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border: 2px solid #e2e8f0;
+  }
+
+  /* ── Dots ── */
+  .dots {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: var(--card-w);
+    margin-bottom: 22px;
+  }
+
+  .dot {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .dot.active { background: #4ade80; transform: scale(1.35); }
+  .dot.seen   { background: #38bdf8; }
+
+  /* ── Meta ── */
+  .meta-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .meta-btn {
+    font-family: 'Bubblegum Sans', cursive;
+    font-size: 0.9rem;
+    padding: 9px 20px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .meta-btn:hover {
+    border-color: #4ade80;
+    color: #16a34a;
+  }
+
+  .card-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 440px) {
+    :root { --card-h: 380px; }
+    h1 { font-size: 2rem; }
+    .animal-name { font-size: 2.6rem; }
+    .answer-sentence { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="paw">🐾</div>
+  <h1>Animal Flashcards</h1>
+  <p class="subtitle">Tap to reveal the answer</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="prog-text">Card 1 of 11</span>
+    <span id="prog-seen">0 seen</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<div class="card-num" id="card-num">1 / 11</div>
+
+<div class="stage" id="stage" onclick="flipCard()">
+  <div class="card-inner" id="card-inner">
+
+    <div class="card-face card-front">
+      <div class="front-top-bar">
+        <div class="question-text">🐾 What animal is it?</div>
+      </div>
+      <div class="animal-img-wrap">
+        <img class="animal-img" id="animal-img" src="" alt="Animal" />
+      </div>
+      <div class="front-bottom">
+        <div class="tap-hint">👆 Tap to reveal the answer</div>
+      </div>
+    </div>
+
+    <div class="card-face card-back">
+      <div class="back-label">Answer</div>
+      <div class="animal-name" id="animal-name">Dog</div>
+      <div class="answer-divider"></div>
+      <div class="answer-sentence" id="animal-sentence">It is a <em>dog</em>.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn btn-prev" onclick="prevCard()">← Prev</button>
+  <button class="ctrl-btn btn-flip" onclick="flipCard()">Flip Card 🔄</button>
+  <button class="ctrl-btn btn-next" onclick="nextCard()">Next →</button>
+</div>
+
+<div class="dots" id="dots"></div>
+
+<div class="meta-controls">
+  <button class="meta-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+  <button class="meta-btn" onclick="resetCards()">↺ Reset</button>
+</div>
+
+<script>
+// Use reliable, curated image URLs — one per animal, tested sources
+// Images: Unsplash (confirmed working) for most animals
+// Duck and Sheep: fetched live from Wikipedia API to guarantee correct photo
+const animalImages = {
+  'Dog':     'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&q=80',
+  'Cat':     'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&q=80',
+  'Duck':    null,  // loaded from Wikipedia API on startup
+  'Chicken': 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=400&q=80',
+  'Cow':     'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=400&q=80',
+  'Sheep':   null,  // loaded from Wikipedia API on startup
+  'Rabbit':  'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&q=80',
+  'Turtle':  'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=400&q=80',
+  'Pig':     'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400&q=80',
+  'Fish':    'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=400&q=80',
+  'Bird':    'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=400&q=80',
+};
+
+// Fetch correct Duck and Sheep images from Wikipedia API at startup
+async function loadWikiImages() {
+  const toFetch = [
+    { name: 'Duck',  article: 'Mallard' },
+    { name: 'Sheep', article: 'Sheep' },
+  ];
+  for (const item of toFetch) {
+    try {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${item.article}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const img = data?.thumbnail?.source;
+      if (img) {
+        // Bump to a larger size
+        animalImages[item.name] = img.replace(/\/\d+px-/, '/400px-');
+        // If currently showing this card, refresh the image
+        const current_card = deck[current];
+        if (current_card && current_card.name === item.name) {
+          document.getElementById('animal-img').src = animalImages[item.name];
+        }
+      }
+    } catch(e) {
+      console.log('Wiki fetch failed for', item.name, e);
+    }
+  }
+}
+
+const cards = [
+  { name: 'Dog',     article: 'a' },
+  { name: 'Cat',     article: 'a' },
+  { name: 'Duck',    article: 'a' },
+  { name: 'Chicken', article: 'a' },
+  { name: 'Cow',     article: 'a' },
+  { name: 'Sheep',   article: 'a' },
+  { name: 'Rabbit',  article: 'a' },
+  { name: 'Turtle',  article: 'a' },
+  { name: 'Pig',     article: 'a' },
+  { name: 'Fish',    article: 'a' },
+  { name: 'Bird',    article: 'a' },
+];
+
+let deck = [...cards];
+let current = 0;
+let seen = new Set();
+let isFlipped = false;
+
+function buildDots() {
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  deck.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === current ? ' active' : '') + (seen.has(i) && i !== current ? ' seen' : '');
+    d.onclick = () => goTo(i);
+    dots.appendChild(d);
+  });
+}
+
+function updateCard() {
+  const c = deck[current];
+  const img = document.getElementById('animal-img');
+  const imgSrc = animalImages[c.name];
+  if (imgSrc) {
+    img.src = imgSrc;
+  } else {
+    img.src = '';
+    img.alt = 'Loading...';
+    // Poll until the wiki image arrives
+    const poll = setInterval(() => {
+      if (animalImages[c.name]) {
+        img.src = animalImages[c.name];
+        img.alt = c.name;
+        clearInterval(poll);
+      }
+    }, 300);
+  }
+  img.alt = c.name;
+
+  document.getElementById('animal-name').textContent = c.name;
+  document.getElementById('animal-sentence').innerHTML =
+    'It is ' + c.article + ' <em>' + c.name.toLowerCase() + '</em>.';
+
+  document.getElementById('card-num').textContent = (current + 1) + ' / ' + deck.length;
+  document.getElementById('prog-text').textContent = 'Card ' + (current + 1) + ' of ' + deck.length;
+  document.getElementById('prog-seen').textContent = seen.size + ' seen';
+  document.getElementById('prog-fill').style.width =
+    Math.max(9, Math.round(seen.size / deck.length * 100)) + '%';
+
+  isFlipped = false;
+  document.getElementById('stage').classList.remove('flipped');
+  buildDots();
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('stage').classList.toggle('flipped', isFlipped);
+  if (isFlipped) {
+    seen.add(current);
+    document.getElementById('prog-seen').textContent = seen.size + ' seen';
+    document.getElementById('prog-fill').style.width =
+      Math.max(9, Math.round(seen.size / deck.length * 100)) + '%';
+    buildDots();
+  }
+}
+
+function nextCard() {
+  if (current < deck.length - 1) { current++; updateCard(); }
+}
+
+function prevCard() {
+  if (current > 0) { current--; updateCard(); }
+}
+
+function goTo(i) { current = i; updateCard(); }
+
+function shuffleCards() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  current = 0;
+  seen = new Set();
+  updateCard();
+}
+
+function resetCards() {
+  deck = [...cards];
+  current = 0;
+  seen = new Set();
+  updateCard();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+});
+
+updateCard();
+loadWikiImages();
+</script>
+</body>
+</html>
