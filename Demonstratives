@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classroom Demonstratives Quiz</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f5f3ee;
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+    color: #1a1a1a;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+  }
+  .container { max-width: 680px; margin: 0 auto; }
+
+  /* Tabs */
+  .set-tabs { display: flex; gap: 6px; margin-bottom: .75rem; flex-wrap: wrap; }
+  .set-tab {
+    padding: 6px 14px; font-size: 13px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    background: #fff; cursor: pointer; color: #555;
+    font-family: inherit; transition: all .15s;
+  }
+  .set-tab.active {
+    background: #1a6fc4; color: #fff; border-color: #1a6fc4; font-weight: 600;
+  }
+
+  /* Top bar */
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; gap: 8px; flex-wrap: wrap; }
+  .nav-row { display: flex; align-items: center; gap: 8px; }
+  .nav-btn {
+    padding: 6px 14px; font-size: 13px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    background: #fff; cursor: pointer; color: #1a1a1a; font-family: inherit;
+    transition: background .1s;
+  }
+  .nav-btn:hover:not(:disabled) { background: #eee; }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+  .counter { font-size: 13px; color: #777; min-width: 40px; text-align: center; }
+
+  /* Scene card */
+  .scene-card {
+    background: #fff; border: 1.5px solid #e0ddd5;
+    border-radius: 16px; overflow: hidden; margin-bottom: .75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .scene-img {
+    width: 100%; background: #eef4fb;
+    display: flex; align-items: flex-end; justify-content: center;
+    min-height: 200px; padding: 1.5rem 2rem 1rem; gap: 56px;
+  }
+  .obj-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .obj-label {
+    font-size: 11px; color: #999; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+
+  /* Q area */
+  .q-area { padding: 1.1rem 1.25rem; }
+  .question-text { font-size: 15px; font-weight: 600; margin-bottom: .85rem; color: #1a1a1a; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .choice-btn {
+    padding: 10px 12px; font-size: 13.5px;
+    border: 1.5px solid #e0ddd5; border-radius: 10px;
+    background: #fff; cursor: pointer; color: #1a1a1a;
+    text-align: left; display: flex; align-items: center; gap: 8px;
+    font-family: inherit; transition: background .1s; line-height: 1.35;
+  }
+  .choice-btn:hover:not(:disabled) { background: #f5f3ee; }
+  .choice-btn.reveal { background: #e6f7ee; border-color: #5cb87a; color: #1a6b35; }
+  .choice-btn.wrong   { background: #fdecea; border-color: #e05a4e; color: #922; }
+  .choice-btn:disabled { cursor: default; }
+  .choice-letter { font-size: 11px; font-weight: 700; opacity: .45; flex-shrink: 0; }
+  .swatches { display: flex; gap: 3px; flex-shrink: 0; }
+  .swatch {
+    width: 13px; height: 13px; border-radius: 50%;
+    border: 1px solid rgba(0,0,0,.12); display: inline-block; flex-shrink: 0;
+  }
+  .feedback {
+    margin-top: .65rem; font-size: 13px; padding: 7px 11px;
+    border-radius: 8px; font-weight: 500;
+  }
+  .feedback.good { background: #e6f7ee; color: #1a6b35; }
+  .feedback.bad  { background: #fdecea; color: #922; }
+
+  /* Dots */
+  .q-nav { display: flex; gap: 6px; margin-top: .8rem; align-items: center; }
+  .q-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1.5px solid #ccc; background: transparent; cursor: pointer;
+    transition: background .15s;
+  }
+  .q-dot.active { background: #777; border-color: #777; }
+  .q-dot.done   { background: #5cb87a; border-color: #5cb87a; }
+  .q-dot.miss   { background: #e05a4e; border-color: #e05a4e; }
+
+  /* Set 3 */
+  .set3-scene {
+    padding: 1.25rem; display: flex; flex-wrap: wrap;
+    gap: 14px; justify-content: center; background: #eef4fb;
+  }
+  .tick-area { padding: 1.1rem 1.25rem; }
+  .tick-intro { font-size: 14px; color: #555; margin-bottom: .8rem; }
+  .tick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tick-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border: 1.5px solid #e0ddd5; border-radius: 10px;
+    cursor: pointer; font-size: 13px; color: #1a1a1a;
+    background: #fff; user-select: none; font-family: inherit;
+    transition: background .1s;
+  }
+  .tick-item:hover { background: #f5f3ee; }
+  .tick-item.ticked    { background: #e6f7ee; border-color: #5cb87a; color: #1a6b35; }
+  .tick-item.wrong-tick{ background: #fdecea; border-color: #e05a4e; color: #922; }
+  .tick-item.missed    { background: #fff8e1; border-color: #f0b429; color: #7a5400; }
+  .tick-box {
+    width: 16px; height: 16px; border: 1.5px solid #ccc; border-radius: 4px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: .75rem; }
+  .check-btn {
+    padding: 7px 18px; font-size: 13px;
+    border: 1.5px solid #1a6fc4; border-radius: 8px;
+    background: #1a6fc4; color: #fff; cursor: pointer; font-family: inherit;
+    font-weight: 600; transition: opacity .1s;
+  }
+  .check-btn:hover { opacity: .88; }
+  .reveal-btn {
+    padding: 7px 14px; font-size: 13px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    background: #fff; color: #555; cursor: pointer; font-family: inherit;
+  }
+  .reveal-btn:hover { background: #f5f3ee; }
+  .next-btn {
+    margin-left: auto; padding: 5px 14px; font-size: 13px;
+    border: 1.5px solid #ddd; border-radius: 8px;
+    background: #fff; color: #1a1a1a; cursor: pointer; font-family: inherit;
+  }
+  .next-btn:hover { background: #f5f3ee; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Classroom Demonstratives Quiz</h1>
+  <div class="top-bar">
+    <div class="set-tabs">
+      <button class="set-tab active" onclick="switchSet(0)">Set 1 — this / that</button>
+      <button class="set-tab" onclick="switchSet(1)">Set 2 — these / those</button>
+      <button class="set-tab" onclick="switchSet(2)">Set 3 — there is / are</button>
+    </div>
+  </div>
+  <div class="top-bar">
+    <div style="font-size:13px;color:#777;" id="setDesc"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">&#8592;</button>
+      <span class="counter" id="counter">1 / 6</span>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">&#8594;</button>
+    </div>
+  </div>
+  <div class="scene-card">
+    <div id="sceneImg"></div>
+    <div id="qArea"></div>
+  </div>
+</div>
+
+<script>
+// ── OBJECT DEFINITIONS ── exact colours from the image
+const OBJ = {
+  backpack:   { label: 'backpack',    colors: ['blue','yellow','red'] },
+  blackboard: { label: 'blackboard',  colors: ['green','brown'] },
+  book:       { label: 'book',        colors: ['red','blue','yellow','green'] },
+  chair:      { label: 'chair',       colors: ['blue','yellow'] },
+  eraser:     { label: 'eraser',      colors: ['pink','white','blue'] },
+  pen:        { label: 'pen',         colors: ['red','blue','black'] },
+  pencil:     { label: 'pencil',      colors: ['yellow','pink','grey'] },
+  notebook:   { label: 'notebook',    colors: ['blue','teal','grey'] },
+  ruler:      { label: 'ruler',       colors: ['yellow','blue'] },
+  paper:      { label: 'paper',       colors: ['white','grey'] },
+  dictionary: { label: 'dictionary',  colors: ['yellow','blue','green'] },
+  desk:       { label: 'desk',        colors: ['blue','yellow','red'] },
+};
+const ALL_KEYS = Object.keys(OBJ);
+
+const CMAP = {
+  red:'#e03030', blue:'#3a8fd4', yellow:'#f5c842', green:'#2d7a3a',
+  pink:'#e87aaa', white:'#f0f0e8', orange:'#f08030', purple:'#9b59b6',
+  brown:'#7a4e2a', grey:'#888780', black:'#2c2c2a', teal:'#3acfd4',
+};
+
+// ── SVGs ──
+function svg(key, size) {
+  const s = size;
+  const map = {
+    backpack: `<svg width="${s}" height="${s}" viewBox="0 0 80 90">
+      <rect x="10" y="20" width="60" height="60" rx="14" fill="#3a8fd4"/>
+      <rect x="22" y="30" width="36" height="24" rx="6" fill="#f5c842"/>
+      <rect x="28" y="36" width="24" height="12" rx="4" fill="#3a8fd4"/>
+      <rect x="30" y="14" width="20" height="12" rx="6" fill="#3a8fd4" stroke="#2a6fa0" stroke-width="1.5"/>
+      <rect x="8"  y="30" width="6"  height="30" rx="3" fill="#e03030"/>
+      <rect x="66" y="30" width="6"  height="30" rx="3" fill="#e03030"/>
+      <rect x="26" y="58" width="28" height="16" rx="6" fill="#2a6fa0"/>
+      <circle cx="40" cy="66" r="4" fill="#f5c842"/>
+    </svg>`,
+    blackboard: `<svg width="${s}" height="${s}" viewBox="0 0 90 72">
+      <rect x="4"  y="4"  width="82" height="56" rx="5" fill="#7a4e2a"/>
+      <rect x="10" y="9"  width="70" height="46" rx="3" fill="#2d7a3a"/>
+      <rect x="14" y="57" width="62" height="8"  rx="3" fill="#9a6b40"/>
+      <rect x="24" y="59" width="14" height="4"  rx="2" fill="#e8e0d0"/>
+    </svg>`,
+    book: `<svg width="${s}" height="${s}" viewBox="0 0 70 85">
+      <rect x="8"  y="4"  width="54" height="77" rx="4" fill="#e03030"/>
+      <rect x="8"  y="4"  width="10" height="77" rx="2" fill="#1a5fa0"/>
+      <rect x="12" y="8"  width="4"  height="69"        fill="#f5c842"/>
+      <rect x="18" y="14" width="34" height="4"  rx="2" fill="#fff" opacity=".7"/>
+      <rect x="18" y="22" width="26" height="3"  rx="1" fill="#fff" opacity=".4"/>
+      <circle cx="40" cy="48" r="12" fill="#2d7a3a" opacity=".7"/>
+    </svg>`,
+    chair: `<svg width="${s}" height="${s}" viewBox="0 0 80 90">
+      <rect x="15" y="5"  width="50" height="36" rx="8" fill="#3a8fd4"/>
+      <rect x="20" y="10" width="40" height="26" rx="5" fill="#5aaae0"/>
+      <rect x="15" y="42" width="50" height="10" rx="4" fill="#f5c842"/>
+      <rect x="18" y="52" width="8"  height="32" rx="3" fill="#f5c842"/>
+      <rect x="54" y="52" width="8"  height="32" rx="3" fill="#f5c842"/>
+      <rect x="18" y="68" width="44" height="6"  rx="3" fill="#d4a820"/>
+    </svg>`,
+    eraser: `<svg width="${s}" height="${s}" viewBox="0 0 90 52">
+      <rect x="5"  y="9"  width="80" height="34" rx="8" fill="#e87aaa"/>
+      <rect x="5"  y="9"  width="38" height="34" rx="8" fill="#e8e0d0"/>
+      <line x1="43" y1="9" x2="43" y2="43" stroke="#d06090" stroke-width="2"/>
+      <rect x="5"  y="36" width="80" height="7"  rx="4" fill="#3a8fd4" opacity=".5"/>
+    </svg>`,
+    pen: `<svg width="${s}" height="${s}" viewBox="0 0 22 90">
+      <rect x="5" y="5"  width="12" height="10" rx="5" fill="#2c2c2a"/>
+      <rect x="5" y="15" width="12" height="46" rx="2" fill="#e03030"/>
+      <rect x="5" y="61" width="12" height="18" rx="2" fill="#3a8fd4"/>
+      <polygon points="5,79 17,79 11,90" fill="#2c2c2a"/>
+    </svg>`,
+    pencil: `<svg width="${s}" height="${s}" viewBox="0 0 22 90">
+      <rect x="5" y="5"  width="12" height="10" rx="4" fill="#e87aaa"/>
+      <rect x="5" y="15" width="12" height="52" rx="1" fill="#f5c842"/>
+      <rect x="5" y="67" width="12" height="8"        fill="#888780"/>
+      <polygon points="5,75 17,75 11,88" fill="#f0d090"/>
+      <polygon points="8,83 14,83 11,90" fill="#2c2c2a"/>
+    </svg>`,
+    notebook: `<svg width="${s}" height="${s}" viewBox="0 0 76 90">
+      <rect x="13" y="5"  width="58" height="80" rx="5" fill="#3a8fd4"/>
+      <rect x="13" y="5"  width="58" height="80" rx="5" fill="none" stroke="#3acfd4" stroke-width="3"/>
+      ${[10,22,34,46,58,70].map(y=>`<rect x="5" y="${y}" width="12" height="6" rx="2" fill="#888780" opacity=".6"/>`).join('')}
+      <rect x="21" y="12" width="40" height="66" rx="3" fill="#5aaae0"/>
+    </svg>`,
+    ruler: `<svg width="${s}" height="${s}" viewBox="0 0 100 30">
+      <rect x="2"  y="2"  width="96" height="26" rx="5" fill="#f5c842"/>
+      <rect x="2"  y="2"  width="96" height="26" rx="5" fill="none" stroke="#d4a820" stroke-width="1"/>
+      ${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="${10+i*10}" y="2" width="2" height="${i%2===0?13:7}" fill="#3a8fd4"/>`).join('')}
+    </svg>`,
+    paper: `<svg width="${s}" height="${s}" viewBox="0 0 70 85">
+      <rect x="5"  y="5"  width="55" height="72" rx="3" fill="#f0f0e8" stroke="#c8c8c0" stroke-width="1.5"/>
+      <polygon points="45,5 60,5 60,20" fill="#c8c8c0"/>
+      <rect x="14" y="22" width="32" height="2.5" rx="1" fill="#c0c0b8"/>
+      <rect x="14" y="30" width="28" height="2.5" rx="1" fill="#c0c0b8"/>
+      <rect x="14" y="38" width="30" height="2.5" rx="1" fill="#c0c0b8"/>
+    </svg>`,
+    dictionary: `<svg width="${s}" height="${s}" viewBox="0 0 70 85">
+      <rect x="5"  y="4"  width="60" height="77" rx="4" fill="#f5c842"/>
+      <rect x="5"  y="4"  width="12" height="77" rx="2" fill="#d4a820"/>
+      <rect x="14" y="20" width="42" height="46" rx="4" fill="#3a8fd4"/>
+      <rect x="14" y="62" width="42" height="8"  rx="2" fill="#2d7a3a"/>
+      <text x="35" y="50" text-anchor="middle" font-size="17" font-weight="bold" fill="#fff" font-family="Georgia,serif">A-Z</text>
+    </svg>`,
+    desk: `<svg width="${s}" height="${s}" viewBox="0 0 90 80">
+      <rect x="4"  y="6"  width="82" height="20" rx="5" fill="#3a8fd4"/>
+      <rect x="4"  y="6"  width="82" height="20" rx="5" fill="none" stroke="#5ad4e0" stroke-width="2"/>
+      <rect x="7"  y="22" width="20" height="52" rx="5" fill="#e03030"/>
+      <rect x="63" y="22" width="20" height="52" rx="5" fill="#e03030"/>
+      <rect x="20" y="52" width="50" height="10" rx="4" fill="#f5c842"/>
+    </svg>`,
+  };
+  return map[key] || `<svg width="${s}" height="${s}"><rect width="${s}" height="${s}" fill="#eee" rx="8"/></svg>`;
+}
+
+// ── COLOUR HELPERS ──
+function colorsToStr(arr) {
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return arr[0] + ' and ' + arr[1];
+  return arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+}
+
+function swatchesHtml(arr) {
+  return `<span class="swatches">${arr.map(c => {
+    const h = CMAP[c] || '#888';
+    return `<span class="swatch" style="background:${h};${c==='white'?'border:1px solid #bbb;':''}"></span>`;
+  }).join('')}</span>`;
+}
+
+// Generate 3 wrong colour combos (same length preferred, all different from correct)
+function wrongColorCombos(correct, n) {
+  const correctStr = colorsToStr(correct);
+  const pool = [];
+  // same-length combos from ALL_KEYS colour lists
+  ALL_KEYS.forEach(k => {
+    const c = OBJ[k].colors;
+    const s = colorsToStr(c);
+    if (s !== correctStr) pool.push(c);
+  });
+  // also shuffled subsets & singles for variety
+  const allC = Object.keys(CMAP);
+  for (let i = 0; i < allC.length; i++) {
+    for (let j = i+1; j < allC.length; j++) {
+      const p = [allC[i], allC[j]];
+      if (colorsToStr(p) !== correctStr) pool.push(p);
+    }
+  }
+  allC.forEach(c => { if (colorsToStr([c]) !== correctStr) pool.push([c]); });
+
+  const shuffled = [...pool].sort(() => Math.random() - .5);
+  const sameLen = shuffled.filter(o => o.length === correct.length);
+  const diffLen = shuffled.filter(o => o.length !== correct.length);
+  return [...sameLen, ...diffLen].slice(0, n);
+}
+
+function buildColorChoices(correctColors) {
+  const wrongs = wrongColorCombos(correctColors, 3);
+  return [correctColors, ...wrongs].sort(() => Math.random() - .5).map(combo => ({
+    val: colorsToStr(combo),
+    colors: combo,
+    label: colorsToStr(combo),
+  }));
+}
+
+// ── SCENES ──
+const s0 = [
+  { close:'backpack',   far:'ruler'      },
+  { close:'pencil',     far:'blackboard' },
+  { close:'book',       far:'chair'      },
+  { close:'eraser',     far:'dictionary' },
+  { close:'notebook',   far:'paper'      },
+  { close:'desk',       far:'pen'        },
+];
+const s1 = [
+  { these:'pencil',   those:'book',       theseCount:3, thoseCount:2 },
+  { these:'eraser',   those:'ruler',      theseCount:2, thoseCount:3 },
+  { these:'notebook', those:'chair',      theseCount:2, thoseCount:2 },
+  { these:'backpack', those:'dictionary', theseCount:3, thoseCount:2 },
+];
+const s2 = [
+  { items:['backpack','blackboard','book','chair','eraser'] },
+  { items:['pencil','notebook','ruler','paper','dictionary'] },
+  { items:['desk','pen','book','eraser','chair','pencil'] },
+];
+const SET_DESCS = ['Singular objects — close and far','Plural objects — close and far','Mixed scene — identify objects'];
+
+let currentSet = 0, sceneIdx = [0,0,0], qIdx = [0,0,0];
+let answered = [{},{},{}], wrongAns = [{},{},{}];
+let ticked = [{},{},{}], tickChecked = [false,false,false];
+let _qCache = {};
+
+function shuffle(a) { return [...a].sort(() => Math.random() - .5); }
+function pick(a, n) { return shuffle(a).slice(0, n); }
+function otherKeys(excl, n) { return pick(ALL_KEYS.filter(k => k !== excl), n); }
+
+function switchSet(s) { currentSet = s; render(); }
+function goToQ(i) { qIdx[currentSet] = i; render(); }
+
+function navigate(dir) {
+  const total = getScenesForSet().length;
+  const ni = Math.max(0, Math.min(total - 1, sceneIdx[currentSet] + dir));
+  const ck1 = currentSet+'_'+sceneIdx[currentSet];
+  const ck2 = currentSet+'_'+ni;
+  delete _qCache[ck1]; delete _qCache[ck2];
+  sceneIdx[currentSet] = ni; qIdx[currentSet] = 0;
+  answered[currentSet] = {}; wrongAns[currentSet] = {};
+  ticked[currentSet] = {}; tickChecked[currentSet] = false;
+  render();
+}
+
+function getScenesForSet() { return currentSet===0?s0:currentSet===1?s1:s2; }
+
+// ── QUESTION BUILDERS ──
+function buildQs0(scene) {
+  const { close, far } = scene;
+  const cl = OBJ[close], fl = OBJ[far];
+  const closeColorQ = cl.colors.length > 1
+    ? `What colours is the <strong>${cl.label}</strong>?`
+    : `What colour is the <strong>${cl.label}</strong>?`;
+  const farColorQ = fl.colors.length > 1
+    ? `What colours is the <strong>${fl.label}</strong>?`
+    : `What colour is the <strong>${fl.label}</strong>?`;
+  return [
+    { text:'What is <strong>this</strong>?', choices: shuffle([close,...otherKeys(close,3)]).map(k=>({val:k,label:OBJ[k].label,colors:null})), correct:close, type:'obj' },
+    { text:closeColorQ, choices:buildColorChoices(cl.colors), correct:colorsToStr(cl.colors), type:'color' },
+    { text:'What is <strong>that</strong>?', choices: shuffle([far,...otherKeys(far,3)]).map(k=>({val:k,label:OBJ[k].label,colors:null})), correct:far, type:'obj' },
+    { text:farColorQ, choices:buildColorChoices(fl.colors), correct:colorsToStr(fl.colors), type:'color' },
+  ];
+}
+
+function buildQs1(scene) {
+  const { these, those } = scene;
+  const tl = OBJ[these], ol = OBJ[those];
+  const theseColorQ = tl.colors.length > 1
+    ? `What colours are the <strong>${tl.label}s</strong>?`
+    : `What colour are the <strong>${tl.label}s</strong>?`;
+  const thoseColorQ = ol.colors.length > 1
+    ? `What colours are the <strong>${ol.label}s</strong>?`
+    : `What colour are the <strong>${ol.label}s</strong>?`;
+  return [
+    { text:'What are <strong>these</strong>?', choices: shuffle([these,...otherKeys(these,3)]).map(k=>({val:k+'s',label:OBJ[k].label+'s',colors:null})), correct:these+'s', type:'obj' },
+    { text:theseColorQ, choices:buildColorChoices(tl.colors), correct:colorsToStr(tl.colors), type:'color' },
+    { text:'What are <strong>those</strong>?', choices: shuffle([those,...otherKeys(those,3)]).map(k=>({val:k+'s',label:OBJ[k].label+'s',colors:null})), correct:those+'s', type:'obj' },
+    { text:thoseColorQ, choices:buildColorChoices(ol.colors), correct:colorsToStr(ol.colors), type:'color' },
+  ];
+}
+
+// ── TICK HANDLERS ──
+function tickItem(key) { if (tickChecked[currentSet]) return; ticked[currentSet][key] = !ticked[currentSet][key]; render(); }
+function checkTicks() { tickChecked[currentSet] = true; render(); }
+function revealTicks() {
+  const scene = getScenesForSet()[sceneIdx[currentSet]];
+  scene.items.forEach(k => { ticked[currentSet][k] = true; });
+  tickChecked[currentSet] = true; render();
+}
+
+// ── CHOICE CLICK ──
+function choiceClick(qi, val, correct) {
+  const k = 'q' + qi;
+  if (answered[currentSet][k] !== undefined) return;
+  answered[currentSet][k] = (val === correct);
+  if (val !== correct) wrongAns[currentSet][k] = val;
+  render();
+}
+
+// ── RENDER SCENE ──
+function renderScene() {
+  const el = document.getElementById('sceneImg');
+  if (currentSet === 0) {
+    const sc = s0[sceneIdx[0]];
+    el.className = 'scene-img';
+    el.innerHTML = `
+      <div class="obj-col">${svg(sc.close,110)}<div class="obj-label">(close)</div></div>
+      <div class="obj-col" style="margin-bottom:10px">${svg(sc.far,58)}<div class="obj-label">(far)</div></div>`;
+  } else if (currentSet === 1) {
+    const sc = s1[sceneIdx[1]];
+    el.className = 'scene-img';
+    const theseRow = Array(sc.theseCount).fill(0).map(()=>svg(sc.these,52)).join('');
+    const thoseRow = Array(sc.thoseCount).fill(0).map(()=>svg(sc.those,34)).join('');
+    el.innerHTML = `
+      <div class="obj-col">
+        <div style="display:flex;gap:6px;align-items:flex-end">${theseRow}</div>
+        <div class="obj-label">(close)</div>
+      </div>
+      <div class="obj-col" style="margin-bottom:8px">
+        <div style="display:flex;gap:4px;align-items:flex-end">${thoseRow}</div>
+        <div class="obj-label">(far)</div>
+      </div>`;
+  } else {
+    const sc = s2[sceneIdx[2]];
+    el.className = '';
+    el.innerHTML = `<div class="set3-scene">${sc.items.map(k=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px">${svg(k,60)}</div>`).join('')}</div>`;
+  }
+}
+
+// ── RENDER Q AREA ──
+function renderQ() {
+  const qa = document.getElementById('qArea');
+
+  if (currentSet === 2) {
+    const sc = s2[sceneIdx[2]];
+    const ts = ticked[currentSet], checked = tickChecked[currentSet];
+    const ticksHtml = ALL_KEYS.map(k => {
+      const isCorrect = sc.items.includes(k), isTicked = ts[k];
+      let cls = 'tick-item';
+      if (checked) {
+        if (isTicked && isCorrect) cls += ' ticked';
+        else if (isTicked && !isCorrect) cls += ' wrong-tick';
+        else if (!isTicked && isCorrect) cls += ' missed';
+      } else if (isTicked) cls += ' ticked';
+      const icon = checked ? (isTicked&&isCorrect?'✓':isTicked&&!isCorrect?'✗':isCorrect?'!':'') : (isTicked?'✓':'');
+      return `<div class="${cls}" onclick="tickItem('${k}')"><div class="tick-box">${icon}</div>${OBJ[k].label}</div>`;
+    }).join('');
+
+    let fb = '';
+    if (checked) {
+      const correct = sc.items.filter(k=>ts[k]).length;
+      const total = sc.items.length;
+      const wrong = ALL_KEYS.filter(k=>ts[k]&&!sc.items.includes(k)).length;
+      fb = `<div class="feedback ${correct===total&&wrong===0?'good':'bad'}">${correct}/${total} correct objects ticked${wrong>0?` — ${wrong} incorrect`:''}. ${correct===total&&wrong===0?'Perfect! ✓':'Yellow = missed, red = incorrect.'}</div>`;
+    }
+    qa.innerHTML = `<div class="tick-area">
+      <div class="tick-intro">Tick the objects you can see. Then say: <em>There is a… / There are…</em></div>
+      <div class="tick-grid">${ticksHtml}</div>
+      ${fb}
+      <div class="action-row">
+        ${!checked ? `<button class="check-btn" onclick="checkTicks()">Check answers</button>` : ''}
+        ${!checked ? `<button class="reveal-btn" onclick="revealTicks()">Reveal</button>` : ''}
+      </div>
+    </div>`;
+    return;
+  }
+
+  // Sets 0 & 1
+  const buildFn = currentSet === 0 ? buildQs0 : buildQs1;
+  const scene = currentSet === 0 ? s0[sceneIdx[0]] : s1[sceneIdx[1]];
+  const ck = currentSet + '_' + sceneIdx[currentSet];
+  if (!_qCache[ck]) _qCache[ck] = buildFn(scene);
+  const qs = _qCache[ck];
+
+  const qi = qIdx[currentSet];
+  const q = qs[qi];
+  const k = 'q' + qi;
+  const isAnswered = answered[currentSet][k] !== undefined;
+  const wasCorrect = answered[currentSet][k];
+  const wrongVal = wrongAns[currentSet][k];
+  const letters = ['A','B','C','D'];
+
+  const choicesHtml = q.choices.map((c, i) => {
+    let cls = 'choice-btn';
+    if (isAnswered) {
+      if (c.val === q.correct) cls += ' reveal';
+      else if (c.val === wrongVal) cls += ' wrong';
+    }
+    const display = q.type === 'color'
+      ? `${swatchesHtml(c.colors)} ${c.label}`
+      : c.label;
+    const safeVal = c.val.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const safeCorrect = q.correct.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button class="${cls}" ${isAnswered?'disabled':''} onclick="choiceClick(${qi},'${safeVal}','${safeCorrect}')">
+      <span class="choice-letter">${letters[i]}</span> ${display}
+    </button>`;
+  }).join('');
+
+  let fb = '';
+  if (isAnswered) {
+    const correctChoice = q.choices.find(c => c.val === q.correct);
+    const ansDisplay = q.type === 'color'
+      ? (correctChoice ? `${swatchesHtml(correctChoice.colors)} ${q.correct}` : q.correct)
+      : `"${OBJ[q.correct]?.label || q.correct}"`;
+    fb = `<div class="feedback ${wasCorrect?'good':'bad'}">${wasCorrect ? 'Correct! ✓' : 'Not quite — the answer is ' + ansDisplay + '.'}</div>`;
+  }
+
+  const dotsHtml = qs.map((_, i) => {
+    const dk = 'q' + i;
+    let cls = 'q-dot';
+    if (i === qi) cls += ' active';
+    else if (answered[currentSet][dk] === true) cls += ' done';
+    else if (answered[currentSet][dk] === false) cls += ' miss';
+    return `<div class="${cls}" onclick="goToQ(${i})" title="Question ${i+1}"></div>`;
+  }).join('');
+
+  const nextBtn = isAnswered && qi < qs.length - 1
+    ? `<button class="next-btn" onclick="goToQ(${qi+1})">Next &#8594;</button>` : '';
+
+  qa.innerHTML = `<div class="q-area">
+    <div class="question-text">${q.text}</div>
+    <div class="choices">${choicesHtml}</div>
+    ${fb}
+    <div class="q-nav">${dotsHtml}${nextBtn}</div>
+  </div>`;
+}
+
+// ── MAIN RENDER ──
+function render() {
+  const scenes = getScenesForSet();
+  const total = scenes.length;
+  const si = sceneIdx[currentSet];
+  document.querySelectorAll('.set-tab').forEach((t,i) => t.classList.toggle('active', i === currentSet));
+  document.getElementById('counter').textContent = `${si+1} / ${total}`;
+  document.getElementById('setDesc').textContent = SET_DESCS[currentSet];
+  document.getElementById('prevBtn').disabled = si === 0;
+  document.getElementById('nextBtn').disabled = si === total - 1;
+  renderScene();
+  renderQ();
+}
+
+render();
+</script>
+</body>
+</html>
